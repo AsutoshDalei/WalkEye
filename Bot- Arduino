@@ -1,0 +1,104 @@
+const int trigpin=13;
+const int rpin=12;
+const int cpin=11;
+const int lpin=10;
+const int ena=2;
+const int enb=3;
+const int in1=4;
+const int in2=5;
+const int in3=6;
+const int in4=8;
+
+volatile float maxdist = 25.00;
+volatile float frontDuration, frontdist, leftDuration, leftdist, rightDuration, rightdist;
+void setup() {
+  // put your setup code here, to run once:
+  Serial.begin(9600);
+  pinMode(trigpin,OUTPUT);
+  pinMode(rpin,INPUT);
+  pinMode(lpin,INPUT);
+  pinMode(cpin,INPUT);
+
+}
+
+void loop() {
+  // put your main code here, to run repeatedly:
+  delay(1000);
+  dist();
+  if(frontdist<maxdist)
+  {
+    Serial.println("Too close");
+    delay(1000);
+    if (leftdist < rightdist)
+     { moveRight();}
+    else if (leftdist > rightdist) 
+        {moveLeft();}
+  }
+  else
+  {
+    Serial.println("OK");
+    moveForward();
+  }
+  if(leftdist<maxdist)
+  {
+    Serial.println("Left too close");
+    delay(1000);
+    if (leftdist > rightdist)
+      moveForward();
+    else if (leftdist < rightdist)
+      moveRight();
+  }
+  if(rightdist<maxdist)
+  {
+    Serial.println("Right too close");
+    delay(1000);
+    if (rightdist > leftdist)
+      moveForward();
+    else if (leftdist > rightdist)
+      moveLeft();
+  }
+}
+void dist()
+{
+  digitalWrite(trigpin, LOW);  
+  delayMicroseconds(4);
+  digitalWrite(trigpin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigpin, LOW);
+  frontDuration = pulseIn(cpin, HIGH); 
+  leftDuration = pulseIn(lpin, HIGH);
+  rightDuration = pulseIn(rpin, HIGH);
+  frontdist = frontDuration * 10 / 292 / 2; 
+  leftdist = leftDuration * 10 / 292 / 2;
+  rightdist = rightDuration * 10 / 292 / 2;
+  Serial.print("DistanceF: ");
+  Serial.print(frontdist);
+  Serial.println(" cm");
+  Serial.print("DistanceR: ");
+  Serial.print(rightdist);
+  Serial.println(" cm");
+  Serial.print("DistanceL: ");
+  Serial.print(leftdist);
+  Serial.println(" cm");
+}
+void moveForward() {
+  Serial.println("Forward.");
+  digitalWrite(in1, HIGH);
+  digitalWrite(in2, LOW);
+  digitalWrite(in3, HIGH);
+  digitalWrite(in4, LOW);
+}
+void moveLeft() {
+  Serial.println("Left.");
+  digitalWrite(in1, LOW);
+  digitalWrite(in2, LOW);
+  digitalWrite(in3, HIGH);
+  digitalWrite(in4, HIGH);
+}
+void moveRight() {
+  Serial.println("Right.");
+  digitalWrite(in1, HIGH);
+  digitalWrite(in2, HIGH);
+  digitalWrite(in3, LOW);
+  digitalWrite(in4, LOW);
+}
